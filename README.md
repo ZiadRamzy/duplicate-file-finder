@@ -6,13 +6,13 @@ This project is a command-line tool designed to identify duplicate files in a gi
 
 ## Features Implemented
 
-- **Recursive File Listing**: The script accepts a directory as input and lists all files within that directory, including files in subdirectories.
+- **Potential Duplicate Detection**: The script compares file sizes to identify potential duplicates. If two or more files have the same size, they are reported as potential duplicates.
 - **Command-Line Usage**: The script can be run from the command line and accepts a directory path as an argument.
 - **Error Handling**: If an invalid directory is provided, the script returns an error message.
 
 ## Usage
 
-To list all files in a directory recursively, run the following command:
+To detect potential duplicate files based on size:
 
 ```bash
 ./duplicate_finder.py <directory>
@@ -26,11 +26,11 @@ For example, if you are already in the directory that has the python script:
 
 ### Example Output
 
+The output will display groups of files with the same size, indicating potential duplicates:
+
 ```bash
-./file1
-./file2
-./subdir/file3
-...
+Potential duplicates (size: 100 bytes): ./file1 ./file21
+Potential duplicates (size: 100 bytes): ./subdir/duplicateoffile1 ./file1
 ```
 
 ## Requirements
