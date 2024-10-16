@@ -2,27 +2,41 @@
 
 import os
 import sys
+import hashlib
 from typing import Dict, List
 
-def find_potential_duplicates(directory: str) -> Dict[int, List[str]]:
+def calculate_md5(file_path:str) -> str:
+    """Calculate the MD5 hash of a file."""
+    hash_md5 = hashlib.md5()
+
+    try:
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+    except OSError:
+        return ""
+    
+    return hash_md5.hexdigest()
+
+def find_duplicates_by_hash(directory: str) -> Dict[str, List[str]]:
     """Find potential duplicate files by size."""
-    size_to_files: Dict[int, List[str]] = {}
+    hash_to_files: Dict[str, List[str]] = {}
 
 
     for root, dirs, files in os.walk(directory):
         for file in files:
             file_path = os.path.join(root, file)
-            try:
-                file_size = os.path.getsize(file_path)
-            except OSError:
+            file_hash = calculate_md5(file_path)
+
+            if not file_hash:
                 continue
+                        
+            if file_hash not in hash_to_files:
+                hash_to_files[file_hash] = []
             
-            if file_size not in size_to_files:
-                size_to_files[file_size] = []
-            
-            size_to_files[file_size].append(file_path)
+            hash_to_files[file_hash].append(file_path)
     
-    return size_to_files
+    return hash_to_files
     
 
 if __name__ == "__main__":
@@ -37,8 +51,8 @@ if __name__ == "__main__":
         print(f"{directory} is not a valid directory")
         sys.exit(1)
     
-    potential_duplicates = find_potential_duplicates(directory)
+    duplicates = find_duplicates_by_hash(directory)
 
-    for file_size, files in potential_duplicates.items():
+    for file_hash, files in duplicates.items():
         if len(files) > 1:
-            print(f"Potential duplicates (size: {file_size} bytes): {' '.join(files)}")
+            print(f"Probable duplicates (MD5 hash: {file_hash}): {' '.join(files)}")
