@@ -62,6 +62,23 @@ def find_duplicates_by_hash(directory: str, min_size: Optional[int] = None) -> D
             hash_to_files[file_hash].append(file_path)
     
     return hash_to_files
+
+def promt_for_deletion(duplicates: List[str]):
+    """Prompt the user to select which duplicate file to delete."""
+    print("Which file should be deleted?")
+    for idx, file in enumerate(duplicates, 1):
+        print(f" {idx} {file}")
+
+    try:
+        choice = int(input("Enter the number of the file to delete, or any other value to keep all: "))
+        if 1 <= choice <= len(duplicates):
+            os.remove(duplicates[choice - 1])
+            print(f"Deleted: {duplicates[choice - 1]}")
+        else:
+            print("No files deleted.")
+    except ValueError:
+        print("Invalid input, no files deleted.")
+    
     
 
 if __name__ == "__main__":
@@ -99,5 +116,6 @@ if __name__ == "__main__":
             
             for f1, f2 in checked_duplicates:
                 print(f"Duplicates: {f1}, {f2}")
+                promt_for_deletion([f1, f2])
 
 
