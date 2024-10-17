@@ -18,6 +18,23 @@ def calculate_md5(file_path:str) -> str:
     
     return hash_md5.hexdigest()
 
+def files_are_identical(file1: str, file2: str) -> bool:
+    """Perform a byte-by-byte comparison of two files."""
+    try:
+        with open(file1, "rb") as f1, open(file2, "rb") as f2:
+            while True:
+                b1 = f1.read(4096)
+                b2 = f2.read(4096)
+                if b1 != b2:
+                    return False
+                if not b1:
+                    break
+    except OSError:
+        return False
+    
+    return True
+
+
 def find_duplicates_by_hash(directory: str) -> Dict[str, List[str]]:
     """Find potential duplicate files by size."""
     hash_to_files: Dict[str, List[str]] = {}
@@ -55,4 +72,13 @@ if __name__ == "__main__":
 
     for file_hash, files in duplicates.items():
         if len(files) > 1:
-            print(f"Probable duplicates (MD5 hash: {file_hash}): {' '.join(files)}")
+            checked_duplicates = []
+            for i in range(len(files)):
+                for j in range(i + 1, len(files)):
+                    if files_are_identical(files[i], files[j]):
+                        checked_duplicates.append((files[i], files[j]))
+            
+            for f1, f2 in checked_duplicates:
+                print(f"Duplicates: {f1}, {f2}")
+
+                
