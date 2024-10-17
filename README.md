@@ -12,6 +12,7 @@ This project is a command-line tool designed to identify duplicate files in a gi
 - **Interactive File Deletion**: After detecting duplicates, the script prompts the user to select which duplicate file to delete. The user can choose between the duplicate files, or skip deletion by providing an invalid input.
 - **Command-Line Usage**: The script can be run from the command line and accepts a directory path as an argument and a minimum file size in **bytes** as optional argument.
 - **Error Handling**: If an invalid directory is provided, the script returns an error message.
+- **Symlink Handling**: The script optionally follows symbolic links during the duplicate detection process. You can enable this by using the --follow-symlinks flag.
 
 ## Usage
 
@@ -30,10 +31,16 @@ For example, if you are already in the directory that has the python script:
 To detect duplicates while ignoring files smaller than a certain size:
 
 ```bash
-./duplicate_finder.py --minsize=1000 <directory>
+./duplicate_finder.py --minsize=1000  <directory>
 ```
 
 This will only consider files that are 1,000 bytes or larger when detecting duplicates.
+
+To follow symlinks during the detection process:
+
+```bash
+./duplicate_finder.py --minsize=1000 --follow-symlinks <directory>
+```
 
 ### Example Output
 
