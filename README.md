@@ -7,6 +7,7 @@ This project is a command-line tool designed to identify duplicate files in a gi
 ## Features Implemented
 
 - **MD5 Hashing for Duplicate Detection**: The script calculates the MD5 hash of each file. Files with the same MD5 hash are reported as probable duplicates.
+- **Full Byte-by-Byte Comparison for Duplicates**: After detecting probable duplicates using MD5 hashes, the script now performs a full byte-by-byte comparison of the files to confirm they are truly identical.
 - **Command-Line Usage**: The script can be run from the command line and accepts a directory path as an argument.
 - **Error Handling**: If an invalid directory is provided, the script returns an error message.
 
@@ -29,7 +30,7 @@ For example, if you are already in the directory that has the python script:
 The output will display groups of files with the same size, indicating potential duplicates:
 
 ```bash
-Probable duplicates (MD5 hash: e48f7c224cc0be1934024a15b9f55d52): ./file21 ./file1
+Duplicates: ./file1 ./subdir/duplicateoffile1
 ```
 
 ## Requirements
