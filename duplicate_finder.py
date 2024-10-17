@@ -6,7 +6,15 @@ import hashlib
 from typing import Dict, List, Optional
 
 def calculate_md5(file_path:str) -> str:
-    """Calculate the MD5 hash of a file."""
+    """
+    Calculate the MD5 hash of a file.
+    
+    Parameters:
+    file_path (str): The path to the file.
+
+    Returns:
+    str: The MD5 hash of the file as a hexadecimal string. Returns an empty string on error.
+    """
     hash_md5 = hashlib.md5()
 
     try:
@@ -19,7 +27,16 @@ def calculate_md5(file_path:str) -> str:
     return hash_md5.hexdigest()
 
 def files_are_identical(file1: str, file2: str) -> bool:
-    """Perform a byte-by-byte comparison of two files."""
+    """
+    Perform a byte-by-byte comparison of two files.
+    
+    Parameters:
+    file1 (str): Path to the first file.
+    file2 (str): Path to the second file.
+    
+    Returns:
+    bool: True if the files are identical, False otherwise.
+    """
     try:
         with open(file1, "rb") as f1, open(file2, "rb") as f2:
             while True:
@@ -35,14 +52,27 @@ def files_are_identical(file1: str, file2: str) -> bool:
     return True
 
 
-def find_duplicates_by_hash(directory: str, min_size: Optional[int] = None) -> Dict[str, List[str]]:
-    """Find potential duplicate files by size."""
+def find_duplicates_by_hash(directory: str, min_size: Optional[int] = None, follow_symlinks: bool = False) -> Dict[str, List[str]]:
+    """
+    Find potential duplicate files by size.
+    
+    Parameters:
+    directory (str): The directory to search for duplicates.
+    min_size (Optional[int]): The minimum file size in bytes to consider. Files smaller than this size will be ignored.
+    follow_symlinks (bool): Whether to follow symbolic links.
+
+    Returns:
+    Dict[str, List[str]]: A dictionary where the key is the MD5 hash and the value is a list of file paths with that hash.
+    """
     hash_to_files: Dict[str, List[str]] = {}
 
 
-    for root, dirs, files in os.walk(directory):
+    for root, dirs, files in os.walk(directory, followlinks=follow_symlinks):
         for file in files:
             file_path = os.path.join(root, file)
+
+            if os.path.islink(file_path):
+                file_path = os.path.realpath(file_path)
 
             try:
                 file_size = os.path.getsize(file_path)
@@ -64,7 +94,15 @@ def find_duplicates_by_hash(directory: str, min_size: Optional[int] = None) -> D
     return hash_to_files
 
 def promt_for_deletion(duplicates: List[str]):
-    """Prompt the user to select which duplicate file to delete."""
+    """
+    Prompt the user to select which duplicate file to delete.
+    
+    Parameters:
+    duplicates (List[str]): A list of file paths that are duplicates.
+
+    Returns:
+    None
+    """
     print("Which file should be deleted?")
     for idx, file in enumerate(duplicates, 1):
         print(f" {idx} {file}")
@@ -82,7 +120,7 @@ def promt_for_deletion(duplicates: List[str]):
     
 
 if __name__ == "__main__":
-    
+    follow_symlinks = False
     min_size: Optional[int] = None
     directory: Optional[str] = None
 
@@ -92,10 +130,11 @@ if __name__ == "__main__":
                 min_size = int(arg.split("=")[1])
             except ValueError:
                 print("Invalid value for --minsize. It must be an Integer.")
+        elif arg == "--follow-symlinks":
+            follow_symlinks = True
         else:
             directory = arg
 
-   
     if directory is None:
         print("Usage: ./dupplicate_finder.py [--minsize=<size>] <directory>")
         sys.exit(1)
@@ -104,7 +143,7 @@ if __name__ == "__main__":
         print(f"{directory} is not a valid directory")
         sys.exit(1)
     
-    duplicates = find_duplicates_by_hash(directory, min_size)
+    duplicates = find_duplicates_by_hash(directory, min_size, follow_symlinks)
 
     for file_hash, files in duplicates.items():
         if len(files) > 1:
