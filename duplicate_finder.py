@@ -3,7 +3,7 @@
 import os
 import sys
 import hashlib
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 def calculate_md5(file_path:str) -> str:
     """Calculate the MD5 hash of a file."""
@@ -35,7 +35,7 @@ def files_are_identical(file1: str, file2: str) -> bool:
     return True
 
 
-def find_duplicates_by_hash(directory: str) -> Dict[str, List[str]]:
+def find_duplicates_by_hash(directory: str, min_size: Optional[int] = None) -> Dict[str, List[str]]:
     """Find potential duplicate files by size."""
     hash_to_files: Dict[str, List[str]] = {}
 
@@ -43,6 +43,14 @@ def find_duplicates_by_hash(directory: str) -> Dict[str, List[str]]:
     for root, dirs, files in os.walk(directory):
         for file in files:
             file_path = os.path.join(root, file)
+
+            try:
+                file_size = os.path.getsize(file_path)
+                if min_size is not None and file_size < min_size:
+                    continue
+            except OSError:
+                continue
+
             file_hash = calculate_md5(file_path)
 
             if not file_hash:
@@ -57,18 +65,29 @@ def find_duplicates_by_hash(directory: str) -> Dict[str, List[str]]:
     
 
 if __name__ == "__main__":
+    
+    min_size: Optional[int] = None
+    directory: Optional[str] = None
+
+    for arg in sys.argv[1:]:
+        if arg.startswith("--minsize="):
+            try:
+                min_size = int(arg.split("=")[1])
+            except ValueError:
+                print("Invalid value for --minsize. It must be an Integer.")
+        else:
+            directory = arg
+
    
-    if len(sys.argv) != 2:
-        print("Usage: ./duplicate_finder.py <directory>")
+    if directory is None:
+        print("Usage: ./dupplicate_finder.py [--minsize=<size>] <directory>")
         sys.exit(1)
-
-    directory: str = sys.argv[1]
-
+        
     if not os.path.isdir(directory):
         print(f"{directory} is not a valid directory")
         sys.exit(1)
     
-    duplicates = find_duplicates_by_hash(directory)
+    duplicates = find_duplicates_by_hash(directory, min_size)
 
     for file_hash, files in duplicates.items():
         if len(files) > 1:
@@ -81,4 +100,4 @@ if __name__ == "__main__":
             for f1, f2 in checked_duplicates:
                 print(f"Duplicates: {f1}, {f2}")
 
-                
+
